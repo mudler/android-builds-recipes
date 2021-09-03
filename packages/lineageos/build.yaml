@@ -1,0 +1,25 @@
+# OTA server:
+# https://github.com/julianxhokaxhiu/LineageOTA#buildprop
+
+
+package_dir: /root/android/lineage/out/target/product/{{.Values.name}}
+requires:
+- category: "base"
+  name: "buildenv"
+  version: ">=0"
+
+prelude:
+- /bin/bash -c ". ~/.profile && cd ~/android/lineage && repo init -u https://github.com/LineageOS/android.git -b lineage-{{.Values.version}} && repo sync"
+# Or either extract them manually (https://wiki.lineageos.org/devices/chiron/build#extract-proprietary-blobs)
+#- mkdir -p ~/android/lineage/vendor/{{.Values.vendor}}
+
+#- wget https://github.com/TryHardDood/mi-vendor-updater/releases/download/chiron_global-stable/fw-vendor_chiron_miui_MIMIX2Global_V11.0.6.0.PDEMIXM_0805fdbc02_9.0.zip -O vendor.zip
+#- unzip vendor.zip
+#- cp -rfv firmware-update/* ~/android/lineage/vendor/{{.Values.vendor}}
+
+- git clone https://gitlab.com/the-muppets/proprietary_vendor_xiaomi.git ~/android/lineage/vendor/{{.Values.vendor}}
+- cd ~/android/lineage/vendor/{{.Values.vendor}} && git checkout lineage-{{.Values.version}}
+
+- /bin/bash -c ". ~/.profile && cd ~/android/lineage && . build/envsetup.sh && breakfast {{.Values.name}}"
+steps:
+- /bin/bash -c ". ~/.profile && . build/envsetup.sh && cd ~/android/lineage && brunch chiron"

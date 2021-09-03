@@ -1,0 +1,5 @@
+packages:
+- name: "chiron"
+  category: "lineageos"
+  version: "18.1"
+  vendor: "xiaomi"
