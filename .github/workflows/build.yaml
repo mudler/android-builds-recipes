@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+
+  generate-matrix:
+    name: Generate matrix for build
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install deps
+        run: |
+          curl https://get.mocaccino.org/luet/get_luet_root.sh | sudo sh
+          sudo luet install utils/jq
+      - name: Set matrix for build
+        id: set-matrix
+        run: |
+          JSON="{\"include\":"
+          JSONline="$(luet tree pkglist --tree packages -o json | jq -rc '.packages')"
+          JSON="$JSON$JSONline"
+          JSON="$JSON}"
+          # Set output
+          echo "::set-output name=matrix::$( echo "$JSON" )"
+
+  build:
+    needs: generate-matrix
+    continue-on-error: true
+    strategy:
+      matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Release space from worker
+      run: |
+        sudo rm -rf /usr/local/lib/android # will release about 10 GB if you don't need Android
+        sudo rm -rf /usr/share/dotnet # will release about 20GB if you don't need .NET
+    - run: |
+        git fetch --prune --unshallow
+    - name: Install deps 🔧
+      run: |
+        curl https://get.mocaccino.org/luet/get_luet_root.sh | sudo sh
+    - name: Build pages 🔧
+      run: |
+        sudo -E luet build --no-spinner --live-output --tree packages ${{ matrix.category }}/${{ matrix.name }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: build.zip
+        path: |
+          build/
