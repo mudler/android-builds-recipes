@@ -16,10 +16,11 @@ prelude:
 #- wget https://github.com/TryHardDood/mi-vendor-updater/releases/download/chiron_global-stable/fw-vendor_chiron_miui_MIMIX2Global_V11.0.6.0.PDEMIXM_0805fdbc02_9.0.zip -O vendor.zip
 #- unzip vendor.zip
 #- cp -rfv firmware-update/* ~/android/lineage/vendor/{{.Values.vendor}}
-
+{{ if eq .Values.vendor "xiaomi" }}
 - git clone https://gitlab.com/the-muppets/proprietary_vendor_xiaomi.git ~/android/lineage/vendor/{{.Values.vendor}}
+{{ end }}
 - cd ~/android/lineage/vendor/{{.Values.vendor}} && git checkout lineage-{{.Values.version}}
 
 - /bin/bash -c ". ~/.profile && cd ~/android/lineage && . build/envsetup.sh && breakfast {{.Values.name}}"
 steps:
-- /bin/bash -c ". ~/.profile && . build/envsetup.sh && cd ~/android/lineage && brunch chiron"
+- /bin/bash -c ". ~/.profile && . build/envsetup.sh && cd ~/android/lineage && brunch {{.Values.name}}"
